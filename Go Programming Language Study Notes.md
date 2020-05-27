@@ -522,7 +522,533 @@ var 变量名称 类型 = 表达式
   c := 1 << 2 // 0000 0001 => 0000 0100 = 4
   ``````
 
+
+
+## Character 3 程序流程
+
+
+
+### 01. 顺序流程
+
+``````go
+func main() {
+	var num1 int = 10
+    var num2 int = num1 + 10
+    fmt.Println(num2)
+}
+``````
+
+
+
+### 02. 分支流程控制
+
+- 单分支
+
+  ``````go
+  /* 
+  if 条件表达式 {
+  	执行代码块
+  }
+  */
+  func main() {
+      var age int = 20
+      if age > 18 {
+          fmt.Println("已成年")
+      }
+      // 方式二
+      /*
+      if age := 20; age > 18 {
+      	fmt.Println("已成年")
+      }
+      */
+  }
+  ``````
+
+- 双分支控制
+
+  ``````go
+  /* 
+  if 条件表达式 {
+  	代码块
+  } else {
+  	代码块
+  }
+  */
   
+  func main() {
+      var age int = 20
+      if age > 18 {
+          fmt.Println("已成年")
+      } else {
+          fmt.Println("未成年")
+      }
+  }
+  ``````
+
+  
+
+- 多分支控制
+
+  ``````go
+  /*
+  if 条件表达式 {
+  	代码块
+  } else if 条件表达式 {
+  	代码块
+  } else {
+  	代码块
+  }
+  */
+  func main() {
+      var score int
+      score = 90
+      if score == 100 {
+          fmt.Println("Nice")
+      } else if score > 80 && score < 90 {
+          fmt.Println("Better")
+      } else if score >= 60 && score <= 80 {
+          fmt.Println("Good")
+      } else {
+          fmt.Println("Bad")
+      }
+  }
+  ``````
+
+
+
+
+### 03. Switch 分支控制
+
+- switch 语句用于基于不同条件执行不同动作，每个case分支都是唯一的，从上到下逐一测试，直到匹配为止
+
+- 匹配项后面不需要再加**break**
+
+  ``````go
+  /*
+  switch 表达式 {
+  
+  case 表达式1， 表达式2 :
+  	代码块
+  case 表达式3， 表达式4 :
+  	代码块
+  ......
+  default:
+  	代码块
+  }
+  */
+  var key byte = 'a'
+  
+  switch key {
+      case 'a':
+      fmt.Println("this is a")
+      case 'b':
+      fmt.Println("this is b")
+      default:
+      fmt.Println("Nothing")
+  }
+  ``````
+
+- case/switch 后面是一个表达式（常量、变量、有返回值的函数）
+
+- case后的各个表达式的值数据类型必须和switch的表达式数据类型保持一致
+
+- case后面可以有多个表达式，使用逗号间隔
+
+- switch穿透 `fallthrough`，如果在case语句块后添加`fallthrough`，则会继续执行下一个case
+
+- Type Switch: switch语句可以被用于type-switch 来判断某个interface变量中实际指向的变量类型
+
+  ``````go
+  var x interface{}
+  var y = 10.0
+  x = y
+  switch i:=x.(type) {
+      case nil:
+      fmt.Printf("x的类型是:%T\n", i)
+      case int:
+      fmt.Printf("x是int\n")
+      case float64:
+      fmt.Printf("x是float64\n")
+      case func(int) float64:
+      fmt.Printf("x是func(int)\n")
+      case bool, string:
+      fmt.Printf("x是bool或string\n")
+      default:
+      fmt.Printf("Don't know\n")
+                 
+  }
+  ``````
+
+- switch/if比较
+
+  - 如果判断的**具体数值不多**， 而且符合整数、浮点型、字符、字符串等几种类型，建议使用switch
+  - 对区间判断和结果为`bool`类型的判断，使用if，if的使用范围更广
+
+
+
+### 04. for循环控制
+
+``````go
+/*
+for 循环变量初始化; 循环条件; 循环变量迭代 {
+	循环操作代码块
+}
+*/
+for i:=1; i < 10; i++ {
+    fmt.Println("hello")
+}
+/*
+for 循环判断条件 {
+	循环语句
+}
+*/
+j := 1
+for j < 10 {
+    fmt.Println("world")
+    j++
+}
+/*
+for {
+	循环语句
+}
+==> while True
+==> for ; ; {}
+*/
+k := 1
+for {
+    if k < 10 {
+        fmt.Println("TT")
+    } else {
+        break
+    }
+    k++
+}
+``````
+
+
+
+- `for-range` 遍历数组字符串
+
+  ``````go
+  var str string = "hello, world"
+  for i:0; i < len(str); i++ {
+      fmt.Printf("%c\n", str[i])
+  }
+  for index, value := range str {
+      fmt.Printf("%c\n", value)
+  }
+  ``````
+
+- 使用第一种方式遍历`unicode`字符会出现乱码，解决方案是将`string`转换成[]rune切片
+
+  ``````go
+  var str string = "出现乱码"
+  str2 := []rune(str) // str转换成[]rune切片
+  for i:=0; i <len(str2); i++ {
+      fmt.Printf("%c \n", str2[i])
+  }
+  
+  ``````
+
+- Go中实现while 和do...while
+
+  ``````go
+  // go中没有while和do...while语法，可以通过for循环模拟实现
+  // while的实现
+  /*
+  for {
+  	if 循环条件表达式 {
+  		break
+  	}
+  	循环操作
+  	循环变量迭代
+  }
+  */
+  var i int = 0
+  for {
+      if i > 10 {
+          break
+      }
+      fmt.Println("hello")
+      i++
+  }
+  // ------------------------------------------------------------
+  // do...while 的实现
+  /*
+  for {
+  	循环操作
+  	循环变量迭代
+  	if 循环条件表达式 {
+  		break
+  	}
+  }
+  代码至少执行一次
+  */
+  var j int = 1
+  for {
+      fmt.Println("OK")
+      j++
+      if j > 10 {
+          break
+      }
+  }
+  ``````
+
+  ``````go
+  var num int = 9
+  for i:=1; i <= num; i++ {
+      for j:=1; j <= i; j++ {
+          fmt.Printf("%v * %v = %v\t", j, i, j*i)
+      }
+      fmt.Println()
+  }
+  ``````
+
+- break语句 跳出循环
+
+  - 用于终止某个语句块的执行
+
+  - break只能跳出当前循环
+
+  - 可以通过`lable`指定跳出循环
+
+    ``````go
+    lable2:
+    for i:=0;i < 4; i++ {
+        for j:=0; j < 10; j++ {
+            if j == 2{
+                break lable2
+            }
+            fmt,Println("j=", j)
+        }
+    }
+    ``````
+
+- continue 跳转控制语句
+
+  - continue语句用于结束本次循环，继续执行下一次循环
+
+  - continue可以通过`lable`结束指定循环
+
+    ``````go
+  // lable2:
+    for i:=0;i < 4; i++ {
+      for j:=0; j < 10; j++ {
+            if j == 2{
+                continue
+            }
+            fmt,Println("j=", j)
+        }
+    }
+    ``````
+  
+- `goto` 跳转控制语句
+  
+  - Go语言中的`goto`可以无条件跳转程序指定位置
+  - `goto`语句通常与条件语句配合使用
+  - 一般不主张使用`goto`，避免造成程序混乱
+  ``````go
+  var n int = 30
+  fmt.Println("OK1")
+  if n > 20 {
+      goto lable1
+  }
+  fmt.Println("OK2")
+  fmt.Println("OK3")
+  lable1
+  fmt.Println("OK4")
+  fmt.Println("OK5")
+  fmt.Println("OK6")
+  ``````
+  
+- return 跳转控制语句
+
+  - return 使用在方法或者函数中，表示跳出所在的方法或者函数
+  
+    ``````go
+    func test() {
+        var j int = 1
+        for {
+            fmt.Println("OK")
+            j++
+            if j > 10 {
+                return
+            }
+        }
+    }
+    ``````
+  
+  - return 如果在普通函数，表示跳出该函数，后面的代码不再执行
+  
+  - return在main函数，表示终止程序
+  
+## Character 04 函数、包和错误处理
+
+
+
+### 01. 函数
+
+- 函数的声明
+
+  ``````go
+  /*
+  func name(parameter-list) (result-list) {
+      code body
+      return result-list
+  }
+  */
+  func cal(n1 float64, n2 float64, operator byte) float64 {
+      var res float64
+      switch operator {
+          case '+':
+          res = n1 + n2
+          case '-':
+          res = n1 - n2
+          case '*':
+          res = n1 * n2
+          case '/':
+          res = n1 / n2
+          default:
+          fmt.Println("Operator error")
+      }
+      return res
+  }
+  ``````
+
+
+
+### 02. 包
+
+- 实际开发中不同文件放在不同包中，方便管理
+- 包的实质就是创建不同的文件夹
+- go中每一个文件都属于一个包，go是以包的形式管理文件和项目结构
+- 包可以区分相同函数、变量等标识符
+- 当程序文件很多时，可以很好的管理项目
+- 控制函数、变量等访问范围，即作用域
+- 打包语法： package 包名
+- 引入包： import "包路径"
+
+ ### 03. 函数的递归
+
+- 函数在函数体内可以调用自身的行为
+
+  ``````go
+  func test(n int) {
+      if n > 2{
+          n--
+          test(n)
+      }
+      fmt.Println("n=", n)
+  }
+  ``````
+
+- 执行一个函数时，就创建一个新的独立空间（新的函数栈）
+
+- 函数的局部变量是独立的，不会相互影响
+
+- 递归必须想退出递归的条件逼近，否则就是无限递归
+
+- 当一个函数执行完毕或者return就会返回，遵守谁调用返回给谁
+
+  ``````go
+// 斐波那契数
+func fbn(n int) int {
+    if ( n==1 || n == 2) {
+        return 1
+    } else {
+        return fbn(n - 1) + fbn(n - 2)
+    }
+}
+  ``````
+
+- Go函数不支持重载
+
+- Go中，函数也是一种**数据类型**，可以赋值给一个变量
+
+- 函数可以作为形参，并且调用使用
+
+- 可以使用type简化函数类型的使用
+
+  ``````go
+  /*
+  type 自定义类型名 数据类型
+  */
+  type myIne int
+  type mySum func(int, int) int
+  ``````
+
+- Go支持可变参数
+
+  ``````go
+  /*
+  func sum(args... int){}
+  func sum(n1 int, args... int){}
+  */
+  ``````
+
+  - `args`是slice切片，通过`args[index]`可以访问各个值
+  - 如果函数的形参列表有可变参数，则可变参数需要放在形参列表最后
+
+### 03. `init`函数
+
+- 每一个源文件都可以包含一个`init`函数，该函数会在main函数执行前被调用
+- 如果一个文件同时包含全局变量定义，`init`函数和main函数，执行流程为全局变量定义->`init`函数->main函数
+- `init`函数最主要的作用就是完成一些初始化的工作
+
+  
+
+### 04. 匿名函数
+
+- Go中支持匿名函数，如果函数只希望使用一次则可以使用匿名函数
+
+  ``````go
+  func main() {
+      res1 := func (n1 int, n2 int) int {
+          return n1 + n2
+      }(10, 20)
+  }
+  ``````
+
+- 将匿名函数给一个变量，通过变量来调用函数
+
+  ``````go
+  func main() {
+      a := func (n1, n2 int) int {
+          return n1 - n2
+      }
+      res2 := a(10, 20)
+  }
+  ``````
+
+- 全局匿名函数：如果将匿名函数赋值给一个全局变量，这个函数就是全局匿名函数
+
+
+
+### 05. 闭包
+
+- 闭包就是一个函数和与其相关的引用环境组合的一个整体
+
+  ``````go
+  func AddUpper() func(int) int {
+      var n int = 10
+      return func (x int) int {
+          n = n + x
+          return n
+      }
+  }
+  
+  func main() {
+      f := AddUpper()
+      f(1) // 11
+      f(2) // 13
+      f(3) // 16
+  }
+  ``````
+
+  
+
+
+
 
 
 
