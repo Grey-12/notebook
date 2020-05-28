@@ -1045,7 +1045,201 @@ func fbn(n int) int {
   }
   ``````
 
+
+
+
+### 06. defer函数
+
+- 为了在**函数执行完毕后，及时的释放资源**，Go中提供了defer函数（延时机制）
+
+- 当程序执行到defer时，不会立即执行defer后的语句，而是将defer后的语句压入到一个栈中，然后继续执行函数下一个语句
+
+- 当函数执行完毕后，从栈顶依次去除语句执行（先入后出）
+
+  ``````go
+  func test() {
+      file = openfile(filename)
+      defer file.close()
+      ...
+  }
+  ``````
+
+
+
+### 07. 函数参数
+
+- 值传递： 值类型默认是值传递，变量直接存储值
+- 引用传递：引用类型默认是引用传递，变量存储一个地址，地址对应的空间才是真正的值，当没有任何变量引用这个地址时，该地址对应的数据空间就成为一个垃圾，由GC来回收
+- 如果让值类型变为引用传递可使用指针
+
+
+
+### 08. 字符串的常用函数
+
+- 统计字符串长度`len(str)`
+- 字符串遍历`r:=[]rune(str)`
+- 字符串转`[]byte`, `var bytes = []byte(str)`
+- 10进制转2， 8， 16禁止`str = strconv.FormatInt(123, 2) // 2为进制可为8，16`
+- 查找字符串 `strings.Contains("seafood", "foo") // true`
+- 统计字符串制定字符出现次数 `strings.Count("chesese", "e") // 3`
+- 不区分大小写比较字符串 `strings.EqualFold("abc", "ABC") // true`
+- 返回字符串中特定字符第一次出现的index，如果没有返回-1 `strings.Index("net_abc", "abc") // 4`
+- 返回字符串中特定字符最后一次出现的index，如果没有返回-1 `strings.LastIndex("go golang", "go") // 3`
+- 替换字符串指定的字符 `strings.Replace("go go hello", "go~", n) // n指定替换几个，如果n=-1，表示全部替换`
+- 按照制定字符切分成一个字符串数组 `strings.Split("hello,world,ok", ",")`
+- 字符串大小写转换 `strings.ToLower("Go")// go ` `strings.ToUpper("go") // GO`
+- 将字符串左右两边的空格去掉 `strings.TrimSpace("  tn  ") // tn`
+- 将字符串左右两边指定的字符去掉 `strings.Trim("!hello!", "!") // hello`
+- 将字符串左边指定的字符去掉 `strings.TrimLeft("!hello!", "!") // hello!`
+- 将字符串右边指定的字符去掉 `strings.TrimRight("!hello!", "!") //!hello`
+- 判断字符串是否以指定的字符串开头 `strings.HasPrefix("ftp://192.168.0.1", "ftp") // true`
+- 判断字符串是否以指定的字符串结尾 `strings.HasSuffix("NTL_abc.ini", "ini") // true`
+
+
+
+### 09. 时间和日期函数
+
+- 使用的包 `time`
+
+- `time.Time` 类型 用于表示时间
+
+  ``````go
+  func main() {
+      //获取当前时间
+      now := time.Now()
+  }
+  ``````
+
+- 获取日期其他信息
+
+  ``````go
+  func main() {
+      now := time.Now()
+      now.Year() // 年
+      now.Month() // 月
+      now.Day() // 日
+      now.Hour() // 小时
+      now.Minute() // 分钟
+      now.Second() // 秒
+  }
+  ``````
+
+- 格式化时间，使用`fmt.Sprintf()`
+
+  ``````go
+  dateStr := fmt.Sprintf("%d-%d-%d %d:%d:%d", now.Year(), now.Month(),
+                        now.Day(), now.Hour(), now.Minute(), now.Second(),
+                        )
+  ``````
+
+- 格式化时间 `time.Format()`
+
+  ``````go
+  now.Format("2006-01-02 15:04:05")
+  now.Format("2006-01-02")
+  now.Format("15:04:05")
+  // 2006-01-02 15:04:05 是固定字符串
+  ``````
+
+- 时间常量
+
+  ``````go
+  const(
+  	Nanosecond	Duration = 1 //纳秒
+      Microsecond 	= 1000 * Nanosecond
+      Millisecond		= 1000 * Microsecond
+      Second			= 1000 * Millisecond
+      Minute			= 60 * Second
+      Hour			= 60 * Minute
+  )
+  time.Sleep(time.Millisecond * 100) // sleep 0.1秒
+  ``````
+
+- `time` 的Unix和UnixNano
+
+  ``````go
+  func (t time) Unix() int64
+  // Unix表示将t表示为Unix时间，即从时间点January 1， 1970 UTC到时间点t所进过的时间 单位秒
   
+  func (t time) UnixNano() int64
+  // UnixNano 表示将t表示为Unix时间，即从时间点January 1， 1970 UTC到时间点t所进过的时间 单位纳秒 如果单位时间超过了int64能表示的范围，结果是未定义
+  ``````
+
+
+
+### 10. 内置函数
+
+- `len` : 用来求长度 比如string，array， slice，map， channel
+
+- `new`: 用来分配内存，主要用来分配值类型的指针
+
+  ``````go
+  func main() {
+      num1 := 100
+      num2 := new(num1) // *int
+  }
+  ``````
+
+- `make`: 用来分配内存，主要用来分配引用类型，比如map，channel，slice
+
+
+
+### 11. 错误处理
+
+- panic错误
+
+  ``````go
+  func test() {
+      num1 := 0
+      num2 := 100
+      rest := num2 / num1
+      fmt.Println("res=", res)
+  }
+  
+  func main() {
+      test()
+  }
+  ``````
+
+- 上述代码会发生panic，程序会崩溃
+
+- Go中不支持`try...catch...finally`
+
+- Go中引入的处理方式为： defer，panic，recover
+
+- Go中抛出一个panic异常，在defer中通过recover捕获异常
+
+  ``````go
+  func test() {
+      defer func() {
+          err := recover()
+          if err != nil {
+              fmt.Println("err=", err)
+          }
+      }()
+      num1 := 0
+      num2 := 100
+      rest := num2 / num1
+      fmt.Println("res=", res)
+  }
+  func main() {
+      test()
+  }
+  ``````
+
+- 错误处理程序不会轻易挂掉，使程序更加健壮
+
+#### 11.01 自定义错误处理
+
+
+
+
+
+
+
+
+
+
 
 
 
