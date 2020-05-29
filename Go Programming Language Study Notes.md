@@ -1231,6 +1231,390 @@ func fbn(n int) int {
 
 #### 11.01 自定义错误处理
 
+- Go支持自定义错误，使用`errors.New` 和 `panic`内置函数来实现
+
+- `errors.New("错误信息")` 返回一个error类型的值， 表示一个错误
+
+- `panic` 内置函数，接收一个interface{} 类型的值（任何值），作为参数，接收error类型的值，输出错误信息，并退出程序
+
+  ``````go
+  func readConf(name string) (err error) {
+      if name == "config.ini" {
+          load...
+          return nil
+      } else {
+          return errors.New("read file error")
+      }
+  }
+  
+  func test() {
+      err := readConf("config.txt")
+      if err != nil {
+          panic(err)
+      }
+      fmt.Println("run continue")
+  }
+  ``````
+
+
+
+## Character 05 复杂数据类型
+
+
+
+### 01. 数组
+
+- 数组可以存放多个同一类型数据。数组本身也是一种数据类型
+- 数组是由一个固定长度的特定类型元素组成的序列，一个数据可以由零个或者多个元素组成
+- 数组的长度是固定的
+
+#### 01.01 数组的定义
+
+- `var 数组名 [数组大小] 数据类型`
+  - `var a[5] int`
+  - 初始复制 `a[0] = 1 a[1] = 20`
+- 数组属于值类型，获取数组的地址可以通过数组名来获取 `&intArr`
+- 数组的第一个元素的地址，就是数组的首地址
+- 数组的各个元素的地址间隔是一句数组的类型决定的 `int64->8`  `int32->4`
+
+#### 01.02 数组的使用
+
+- 访问数据的元素通过数据的下标来访问 下标从0开始
+
+#### 01.03 初始化数组
+
+- `var numArr1 [3]int = [3]int{1, 2, 3}`
+- `var numArr2 = [3]int{5, 6, 7}`
+- `var numArr3 = [...]int{8, 9, 10}`
+- `var numArr4 = [...]int{1: 90, 2: 100, 3: 500}`
+- `strArr := [...]string{"tom", "jack"}`
+
+#### 01.04 数组的遍历
+
+- 传统for循环
+
+  ``````go
+  for i:=0; i < len(Arr); i++ {
+      fmt.Println(Arr[i])
+  }
+  ``````
+
+- for-rang 
+
+  ``````go
+  /*
+  for index, value := range array {
+  
+  }
+  */
+  
+  func main() {
+      intArr := [...]int{1, 2, 3, 4}
+      for index, value := range intArr {
+          fmt.Println(value)
+      }
+  }
+  ``````
+
+#### 01.05 数组注意事项
+
+- 数组一旦声明，其长度是固定的，不能动态变化
+- 数组中的元素可以是任何数据类型，包括值类型和引用类型，但只能是单一类型
+- 数组创建后如果没有赋值，默认是数组数据类型对应的默认值
+- 数组使用先声明数组开辟内存空间 然后给数组各个元素赋值
+- 数组的下标从0开始
+- 数组下标必须在指定范围内使用，否则报panic，index out range
+- 数组属值类型，默认是值传递
+- 如果想修改数组可以使用引用传递 数组指针
+- 长度是数组类型的一部分，在传递函数参数时，需要考虑数组的长度
+
+
+
+### 02. 切片
+
+- 切片是数组的一个引用，因此切片是引用类型，在进行传递时，遵循引用传递的机制
+
+- 切片的使用类似数组，遍历、范文切片的元素和求切片长度等方式都一致
+
+- 切片的长度是可以变化的，因此切片是一个可以动态变化的数组
+
+- 切片定义的基本语法
+
+  ``````go
+  // var 切片名 [] 类型
+  var a []int
+  func main() {
+      var intArr [5]int = [...]int{1, 22, 3, 55, 66}
+      slice01 := intArr[1:3]
+      // 使用cap函数查看切片的容量
+      fmt.Println("容量=", cap(slice01)) // 4
+  }
+  ``````
+
+- 切片从底层来说，就是一个结构体
+
+  ``````go
+  type slice struct {
+      ptr *[2]int
+      len  int
+      cap  int
+  }
+  ``````
+
+#### 02.01 切片的使用
+
+- 定义切片可以直接去引用一个创建好的数组
+
+- 通过make来创建切片
+
+  ``````go
+  // var sliceNmae []type = make([]type, len, cap)
+  // cap是切片的容量，可选如果设置cap则cap>=len
+  var sliceFloat []float64 = make([]float64, 5, 10)
+  ``````
+
+- 定义一个切片，直接指定具体的数组
+
+  ``````go
+  var strSlice []string = []string{"tom", "jack"}
+  ``````
+
+- 通过make创建的切片会在底层维护一个数组，由切片来引用
+
+- 切片定义完后，因为本身是一个空的，需要让其引用一个数组，或者make分配内存空间
+
+- 切片可以继续切片
+
+- 用append内置函数对切片进行动态追加
+
+  ``````go
+  var slice3 []int = []int{100, 200, 300}
+  slice3 = append(slice3, 400, 500, 600) // 100,200,300,400,500,600
+  slice3 = append(slice3, slice3...)
+  // 100,200,300,400,500,600,100,200,300,400,500,600
+  ``````
+
+- 切片append操作本质上就是对数组扩容
+
+- go底层会创建一个新的数组，将slice原来的元素拷贝到新的数组，然后slice重新引用到新的数组，数组对程序员不可见
+
+- 切片的拷贝操作
+
+  ``````go
+  // 切片使用copy内置函数来完成拷贝
+  var slice1 []int = []int{1, 2, 3, 4, 5}
+  var slice2 = make([]int, 6)
+  copy(slice2, slice1)
+  fmt.Println(slice2) // 1, 2, 3, 4, 5, 0
+  ``````
+
+- copy(para1, para2) 参数的数据类型是切片
+
+- 参数间的数据类型是独立的互不影响
+
+- 如果`len(para2) > len(para1) 则只会拷贝para1长度的数据给para1`
+
+#### 02.02 string和slice
+
+- string底层是一个byte数组，因此string也可以进行切片处理
+
+  ``````go
+  func main() {
+      str := "hello"
+      strSlice := str[:]
+  }
+  
+  ``````
+
+- string是不可变的，所以不能通过`str[0]='z'`的方式来修改string
+
+- 如果需要修改字符串可以通过`string ->[]byte->change string->join to string`
+
+  ``````go
+  str := "hello"
+  arr1 := []byte
+  arr1[0] = 'z'
+  str = string(arr1) // zello
+  // 如果保护unicode编码
+  arr2 = []rune(str)
+  arr2[0] = "呵"
+  str = string(arr2) // 呵ello
+  ``````
+
+  ``````go
+  // 
+  func fbn(n int) []uint64 {
+      fbnSlice := make([]uint64, n)
+      fbnSlice[0] = 1
+      fbnSlice[1] = 1
+      for i:=2; i<n; i++ {
+          fbnSlice[i] = fbnSlice[i-1] + fbnSlice[i-2]
+      }
+      return fbnSlice
+  }
+  ``````
+
+
+
+### 03.排序和查找
+
+- 排序是将一组数据，依指定顺序进行排列的过程
+- 内部排序：将需要处理的数据加载到内存中进行排序（交换式排序、选择式排序和插入式排序）
+- 外部排序：需要处理的数据过大，无法加载到内存（合并排序法和直接合并排序法）
+
+#### 03.01 冒泡排序
+
+``````go
+package main
+
+import "fmt"
+func BubbleSort(arr *[5]int) {
+    fmt.Println("开始排序", arr)
+    temp := 0 //临时变量，用于交换
+    for i:=0; i < (*arr); i++ {
+        for j:=0; j< len(*arr)-i; j++ {
+            if (*arr)[j] > (*arr)[j+1] {
+                temp = (*arr)[j]
+                (*arr)[j] = (*arr)[j+1]
+                (*arr)[j+1] = temp
+            }
+        }
+    }
+    fmt.Println("排序完毕", (*arr))
+}
+
+func main() {
+    arr := [5]int{24, 69,80,57,13}
+    BubbleSort(&arr)
+    fmt.Println("arr=", arr) // [13 24 57 69 80]
+}
+``````
+
+
+
+#### 03.02 二分查找
+
+``````go
+package main
+
+import "fmt"
+
+func BinaryFind(arr *[6]int, leftIndex int, rightIndex int, findVal int) {
+	if leftIndex > rightIndex {
+		fmt.Println("can't find", findVal)
+	}
+	middle := (leftIndex + rightIndex) / 2
+	if (*arr)[middle] > findVal {
+		BinaryFind(arr, leftIndex, middle -1, findVal)
+	} else if (*arr)[middle] < findVal {
+		BinaryFind(arr, middle+1, rightIndex, findVal)
+	} else {
+		fmt.Println("find this number, the index is",middle)
+	}
+}
+
+func main() {
+	num := [6]int{1, 8, 10, 89, 1000, 1234}
+	// 二分查找
+	BinaryFind(&num, 0, len(num)-1, 1)
+}
+``````
+
+
+
+### 04. 二维数组
+
+- 二维数组图输出
+
+  ``````go
+  package main
+  
+  import "fmt"
+  
+  func main() {
+      /*
+      0 0 0 0 0 0
+      0 0 1 0 0 0
+      0 2 0 3 0 0
+      0 0 0 0 0 0
+      */
+      // 声明
+      var arr [4][6]int
+      arr[1][2] = 1
+      arr[2][1] = 2
+      arr[2][3] = 3
+      for i:=0; i < len(arr); i++ {
+          for j:=0; j < len(arr[0]); j++ {
+              fmt.Println(arr[i][j], " ")
+          }
+          fmt.Println()
+      }
+  }
+  ``````
+
+- 初始化
+
+  ``````go
+  // var name [size][size]type = [size][size]type{{}, {}}
+  
+  var arr [2][3]int = [2][3]int{{1,2,3}, {4, 5, 6}}
+  // var name [size][size]type = [size][size]type{{}, {}}
+  // var name [size][size]type = [...][size]type{{}, {}}
+  // var name = [size][size]type{{}, {}}
+  // var name = [...][size]type{{}, {}}
+  ``````
+
+
+
+### 05. map
+
+- map是key-value数据结构
+- 基本语法：`var mapNmae map[keytype]valuetype`
+- `key`的类型 `bool`，数字，string，指针，channel 通常为`int`、`string`
+- slice，map，function不可以作为key
+- `value`的数据类型基本和key一致
+
+#### 05.01 map的声明
+
+``````go
+var a map[string]string
+var b map[string]int
+var c map[string]map[string]string
+``````
+
+- map的声明不会分配内存，初始化需要make，分配内存过后才能使用
+
+  ``````go
+  package main
+  
+  import "fmt"
+  
+  func main() {
+      var a map[string]string
+      a = make(map[string]string, 10)
+      a["no1"] = "1"
+      a["no2"] = "2"
+  }
+  ``````
+
+- map的`key`不可重复，如果重复了，则以最后这个key-value为准
+
+- map的value是可以相同的
+
+- map的key-value是无序的
+
+- make内置函数数目，可以不指定size
+
+#### 05.02 map的CRUD
+
+
+
+
+
+
+
+
+
 
 
 
