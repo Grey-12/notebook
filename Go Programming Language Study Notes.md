@@ -1607,6 +1607,617 @@ var c map[string]map[string]string
 
 #### 05.02 map的CRUD
 
+- map增加和更新
+
+  ``````go
+  map[key] = value
+  // 如果key还没有，就是增加，如果key存在就是修改
+  func main() {
+      cities := make(map[string]string)
+      cities["1"] = "NewYork"
+      cities["2"] = "Tokoy"
+  }
+  ``````
+
+- map删除
+
+  ``````go
+  // delete(map, key)
+  // delete是一个内置函数，如果key存在，就删除key-value,如果key不存在，不操作，也不会报错
+  delete(cities, "1")
+  ``````
+
+  如果删除map所有的key，没有一个专门的方法一次删除，可以遍历一下key，逐个删除或者
+
+  map = make(...), make一个新的让原来的成为垃圾被gc回收
+
+- map查找
+
+  ``````go
+  val, ok := cities["2"]
+  if ok {
+      // key 存在
+  } else {
+      // key 不存在
+  }
+  // 如果key存在ok为true 如果key不存在 ok为false
+  ``````
+
+- map遍历
+
+  ``````go
+  // for-range 遍历map
+  for k, v := range cities {
+      fmt.Printf("k=%v, v=%v\n", k, v)
+  }
+  ``````
+
+- map的长度
+
+  ``````go
+  func len(v Type) int
+  ``````
+
+#### 05.03 map切片
+
+- 切片的数据类型如果是map，则为map切片
+
+  ``````go
+  package main
+  import "fmt"
+  
+  func main() {
+      var monsters []map[string]string
+      monsters = make([]map[string]string, 2)
+      if monsters[0] == nil {
+          monsters[0] = make(map[string]string, 2)
+          monsters[0]["name"] = "Gost"
+          monsters[0]["age"] = "100"
+      }
+      
+      newMonster := map[string]string {
+          "name": "newGost",
+          "age": "200",
+      }
+      monsters = append(monsters, newMonster)
+  }
+  ``````
+
+#### 05.04 map排序
+
+- Go中没有专门针对map的key进行排序
+
+- Go中map默认无序
+
+- Go中map的排序是先将key进行排序，然后根据key值遍历输出
+
+  ``````go
+  package main
+  
+  import (
+  	"fmt"
+      "sort"
+  )
+  
+  func main() {
+      map1 := make(map[int]int, 10)
+      map[10] = 100
+      map[1] = 13
+      map[4] = 56
+      map[8] = 90
+      
+      fmt.Println(map1)
+      
+      var keys []int
+      for k, _ := range map1 {
+          keys = append(keys, k)
+      }
+      // 对key进行排序
+      sort.Ints(keys)
+      fmt.Println(keys)
+      
+      for _, k := range keys {
+          fmt.Printf("map[%v]=%v \n", k, map1[k])
+      }
+  }
+  ``````
+
+#### 05.05 map使用
+
+- map是引用类型，遵守引用类型传递的机制，在一个函数接受map， 修改后，会直接修改原来的map
+- map的容量达到后，再增加map元素，会自动扩容，并不会发生panic
+- map的value 也经常是`struct`类型，更适合管理复杂的数据
+
+
+
+## Character 06 Go面对对象
+
+### 01. 结构体
+
+- 结构体是一种聚合的数据类型，是由零个或者多个任意类型的值聚合成的实体
+
+- 每个值称为结构体的成员/字段/属性
+
+  ``````go
+  type Cat struct {
+      Name string
+      Age int
+  }
+  ``````
+
+- 字段的类型可以为基本类型、数组、引用类型
+
+- 创建结构体变量后，如果没有赋值，都是对应数据类型的零值
+
+- 结构体本身是值类型
+
+  ``````go
+  type Person struc {
+      Name string
+      Age int
+  }
+  
+  var person Person
+  var person2 Person = Person{}
+  var person3 *Person = new(Person) // 结构体指针
+  var person4 *Person = &Person{} // 结构体指针
+  ``````
+
+- 使用结构体指针类型访问字段的标准方式：(\*person3).Name  (\*person).Age = 19
+
+- 在Go中做了简化，支持 结构体指针.字段名 person4.Name ==> (\*person).Name
+
+- 结构体的所有字段在内存中是连续的
+
+  ``````go
+  package main
+  
+  import "fmt"
+  
+  type Point struct {
+      x int
+      y int
+  }
+  
+  type Rect struct {
+      leftUp, rightDown Point
+  }
+  
+  type Rect2 struct {
+      leftUp, rightDown *Point
+  }
+  
+  func main() {
+      r1 := Rect{
+          Point{1, 2},
+          Point{3, 4},
+      }
+      // r1有四个int，在内存中是连续分布
+      r2 := Rect2{
+          &Point{10, 20},
+          &Point{30, 40},
+      }
+      // r2有两个*Point类型，*Point本身地址是连续的，但他们指向的地址不一定是连续的
+  }
+  ``````
+
+- 结构体是用户单独定义的类型，和其他类型进行转换时需要有完全相同的字段(字段，个数，类型)
+
+- 如果对结构体进行type重新定义，Go中认为是新的数据类型，但是可以相互转换
+
+- `struct`的每个字段上都可以写上一个tag，该tag可以通过反射机制获取，常见的使用场景就是序列化和反序列化
+
+  ``````go
+  type Monster struct {
+      Name string `json:"name"`
+      Age int `json:"age"`
+      Skill string `json:"skill"`
+  }
+  
+  monster := Monster{"Gohst", 500, "gun"}
+  jsonStr, err := json.Marshal(monster)
+  if err != nil {
+      fmt.Println("json 处理错误", err)
+  }
+  fmt.Println("jsonStr", string(jsonStr))
+  ``````
+
+
+
+### 02. 方法
+
+- Go中的方法是作用在指定数据类型上的（和指定数据类型绑定），因此自定义数据类型都可以有方法，不仅仅是`struct`
+
+- 方法的声明和调用
+
+  ``````go
+  type A struct {
+      Num int
+  }
+  func (a A) test() {
+      fmt.Println(a.Num)
+  }
+  // (a A) 体现test方法是和A类型绑定的
+  
+  type Person struct {
+      Name string
+  }
+  
+  func (p Person) test() {
+      fmt.Println("test() name=", p.Name)
+  }
+  
+  func main() {
+      var p Person
+      p.Name = "Tom"
+      p.test()
+  }
+  ``````
+
+- 方法的调用和传参机制和函数基本一样，同时方法调用时，会将调用方法的变量当作实参传递给方法，可以在方法内使用
+
+- 结构体类型是值类型，在方法调用时，遵守值类型的传递机制，是值拷贝方式
+
+- 如果希望在方法中修改结构体变量的值，可以通过结构体指针的方式处理
+
+- Go中的方法作用在指定的数据类型上
+
+- 如果一个类型实现了String()这个方法，那么`fmt.Println()`默认会调用这个变量的String()的输出
+
+- 不管调用形式如何，真正决定是值拷贝还是地址拷贝，主要是方法和哪个类型绑定
+
+- 如果是和值类型绑定则是值拷贝，如果和指针类型绑定则是地址拷贝
+
+
+
+### 03. 工厂模式
+
+- Go的结构体没有构造函数，通常使用工厂函数解决这个问题
+
+  ``````go
+  // 如果某个结构体是不可导出，可以使用工厂模式对外提供接口
+  package model
+  
+  type student struct {
+      Name string
+      Score float64
+  }
+  
+  func NewStudent(n string, s float64) *student {
+      return &student{
+          Name: n,
+          Score: s,
+      }
+  }
+  ``````
+
+
+
+### 04. 封装
+
+- 封装就是把抽象出来的字段和对字段的操作封装在一起，数据被保护在内部，程序的其他包只能通过被授权的操作才能对字段进行操作
+- 封装隐藏实现细节
+- 可以对数据进行验证，保证安全合理
+
+
+
+### 05. 继承
+
+- 解决代码复用的问题，代码冗余且不利于维护，也不利于功能的扩展问题
+
+  ``````go
+  type Goods struct {
+      Name string
+      Price int
+  }
+  
+  type Book struct {
+      Goods
+      Writer string
+  }
+  // 匿名结构体嵌套到其他结构体内 实现继承特性
+  ``````
+
+- 结构体可以使用嵌套匿名结构体所有的字段和方法 即首字母大写或者小写的字段、方法 都可以使用
+
+  ``````go
+  package main
+  
+  import "fmt"
+  
+  type A struct {
+      Name string
+      age int
+  }
+  
+  func (a *A) SayOk() {
+      fmt.Println("A SayOk", a.Name)
+  }
+  
+  func (a *A) hello() {
+      fmt.Println("A hello", a.Name)
+  }
+  
+  type B struct {
+      A
+  }
+  
+  func main() {
+      var b B
+      // b.A.Name = "tom"
+      // b.A.SayOk()
+      // b.A.hello()
+      // 简化写法
+      b.Name = "tom"
+      b.SayOk()
+      b.hello()
+  }
+  ``````
+
+- 当执行`b.Name` 编译器先看b对应的类型中有没有Name，如果有直接调用B类型的Name字段
+
+- 如果没有就去A中查看有没有Name字段，如果A中也没有就报panic
+
+- 当结构体和匿名结构体有相同的字段或者方法时，编译器采用就近访问原则，如果希望访问匿名结构体的字段和方法，可以通过匿名结构体名来区分
+
+- 结构体嵌入两个或者多个匿名结构体，如**两个匿名结构体有相同的字段和方法（同时结构体本身没有同名的字段和方法）**，在访问时，就必须明确指定匿名结构体名字，否则编译报错
+
+- 如果一个结构体嵌套了一个有名结构体，这种模式就是组合，如果是组合关系，那么在访问组合的结构体的字段或者方法时，必须带上结构体的名字
+
+  ``````go
+  type C struct {
+      a A // 有名结构体  组合关系
+  }
+  var c C
+  c.a.Name = "john"
+  ``````
+
+- 嵌套匿名结构体后，也可以在创建结构体变量时，直接指定各个匿名结构体字段的值
+
+
+
+### 06. 多重继承
+
+- 如一个`struct`嵌套了多个匿名结构体，那么该结构体就可以直接访问嵌套的匿名结构体的字段和方法，从而实现了多重继承
+
+  ``````go
+  type Goods struct {
+      Name string
+      Price float64
+  }
+  
+  type Brand struct {
+      Name string
+      Address string
+  }
+  
+  type TV struct {
+      Goods
+      Brand
+  }
+  ``````
+
+
+
+### 07. 接口
+
+- 接口类型是对其他类型行为的抽象和概括，因为接口类型不会和特定的实现细节绑定在一起，通过这种抽象的方式可以让函数更加灵活和更具有适应能力
+
+- Go中接口类型的独特之处在于它是满足隐式实现的，也就是说没有必要对于给定的具体类型定义所有满足的接口类型
+
+- 接口类型可以定义一组方法，但是不需要实现，并且接口不能包含任何变量
+
+  ``````go
+  tyoe InterfaceName interface {
+      method(args) Rargs
+      ...
+  }
+  ``````
+
+- 接口里所有方法都没有方法体，即接口的方法都是没有实现的方法，接口体现了程序设计的多态和高内聚低耦合的思想
+
+- Go中的接口不需要显式的实现。只要一个变量含有接口类型中的所有方法，那么这个变量就实现了这个接口
+
+- 接口本身不能创建实例，但是可以指向一个实现了该接口的自定义类型的变量
+
+  ``````go
+  package main
+  
+  import "fmt"
+  
+  type Ainterface interface {
+      Say()
+  }
+  
+  type Stu struct {
+      Name string
+  }
+  
+  func (str Stu) Say() {
+      fmt.Println("str Say()")
+  }
+  
+  func main() {
+      var stu Stu
+      var a Ainterface = stu
+      a.Say()
+  }
+  ``````
+  
+- 一个自定义类型只有实现了某个接口才能将该自定义类型的实例赋值给接口类型
+
+- 一个自定义类型可以实现多个接口
+
+  ``````go
+type AInterface interface {
+      Say()
+  }
+  
+  type BInterface interface {
+      Hello()
+  }
+  
+  type Monster struct {
+      
+  }
+  
+  func (m Monster) Hello() {
+      fmt.Println("Monster Hello()~~~")
+  }
+  
+  func (m Monster) Say() {
+      fmt.Println("Monster Say()~~~")
+  }
+  
+  var monster Monster
+  var a2 AInterface = monster
+  var b2 BInterface = monster
+  a2.Say()
+  b2.Hello()
+  ``````
+  
+- 一个接口可以继承多个其他接口，这是如果实现这个接口也必须实现该接口继承接口的方法
+  
+- 接口类型默认是一个指针（引用类型），如果没有对interface初始化就使用，那么会输出nil
+  
+- 空接口没有任何方法，所以所有类型都实现了空接口，可以把变量赋值给空接口
+  
+- 接口实践对Hero结构体切片排序`sort.Sort(data interface)`
+  
+  ``````go
+  package main
+  
+  import (
+  	"fmt"
+      "sort"
+      "math/rand"
+  )
+  
+  type Hero struct {
+      Name string
+      Age int
+  }
+  
+  type HeroSlice []Hero
+  
+  
+  // 实现Sort 接口Len方法
+  func (hs HeroSlice) Len() int {
+      return len(hs)
+  }
+  
+  // 实现接口 Less方法 决定按照什么规则排序
+  func (hs HeroSlice) Less(i, j int) bool {
+      // 按照年龄排序
+      return hs[i].Age < hs[j].Age
+      
+      // 按照Name排序
+      // return hs[i].Name < hs[j].Name
+  }
+  
+  // 实现接口 Swap方法交换数据
+  
+  func (hs HeroSlice) Swap(i, j int) {
+      hs[i], hs[j] = hs[j], hs[i]
+  }
+  
+  func main() {
+      var intSlice = []int{0, -1, 10, 7, 90}
+      // 排序
+      sort.Ints(intSlice)
+      
+      var heros HeroSlice
+      for i:=0; i < 10; i++ {
+          hero := Hero{
+              Name: fmt.Sprintf("Hero|%d", rand.Intn(100))
+              Age: rand.Intn(100),
+          }
+          heros = append(heros, hero)
+      }
+      sort.Sort(heros)
+  }
+  
+  ``````
+  
+  
+  
+### 08. 多态
+
+- 变量具有多种形态，在Go中多态特征通过接口实现，可以按照统一的接口来调用不同的实现，这时接口变量就呈现不同的形态
+
+  ``````go
+  package main
+  
+  import "fmt"
+  
+  type Usb interface {
+      Start()
+      Stop()
+  }
+  
+  type Phone struct {
+      name string
+  }
+  
+  func (p Phone) Start() {
+      fmt.Println("Phone start work")
+  }
+  
+  func (p Phone) stop() {
+      fmt.Println("Phone stop work")
+  }
+  
+  type Camera struct {
+      name string
+  }
+  
+  func (c Camera) Start() {
+      fmt.Println("Camera start work")
+  }
+  
+  func (c Camera) Stop() {
+      fmt.Println("Camera stop work")
+  }
+  
+  func main() {
+      var usbArr [3]Usb
+      usbArr[0] = Phone{"xiaomi"}
+      usbArr[1] = Phone{"Vivo"}
+      usbArr[2] = Camera("Nikon")
+      fmt.Println(usbArr)
+  }
+  ``````
+
+
+
+### 09. 类型断言
+
+- 类型断言，由于接口类型是一般类型不知道具体类型，如果要转成具体类型，需要引入类型断言
+
+  ``````go
+  var x interface{}
+  var b2 float32 = 1.1
+  x = b2
+  y := x.(float32)
+  // 在进行类型断言时，如果类型不匹配，就会报panic
+  // 如果类型断言时带上检测机制，如果成功就ok但也不会报panic
+  if y, ok := x.(float32); ok {
+      fmt.Println("Success")
+  }
+  ``````
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+
 
 
 
