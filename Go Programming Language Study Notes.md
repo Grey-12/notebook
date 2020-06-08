@@ -1555,13 +1555,13 @@ func main() {
 - 初始化
 
   ``````go
-  // `var name [size][size]type = [size][size]type{{}, {}}`
+  // var name [size][size]type = [size][size]type{}
   
   var arr [2][3]int = [2][3]int{{1,2,3}, {4, 5, 6}}
-  // var name [size][size]type = [size][size]type{{}, {}}
-  // var name [size][size]type = [...][size]type{{}, {}}
-  // var name = [size][size]type{{}, {}}
-  // var name = [...][size]type{{}, {}}
+  // var name [size][size]type = [size][size]type{}
+  // var name [size][size]type = [...][size]type{}
+  // var name = [size][size]type{}
+  // var name = [...][size]type{}
   ``````
 
 
