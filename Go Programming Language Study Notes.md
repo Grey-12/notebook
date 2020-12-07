@@ -1299,7 +1299,7 @@ func fbn(n int) int {
   }
   ``````
 
-- for-rang 
+- for-range
 
   ``````go
   /*
